@@ -9,7 +9,7 @@
 
 *Purpose<br>*
 
-*This project for like DBA to build a database to keep track of their inventory system. Inputs: Online Retail SpreadSheet named “Online Retail.xlsx” (top 200 rows)
+This project for like DBA to build a database to keep track of their inventory system. Inputs: Online Retail SpreadSheet named “Online Retail.xlsx” (top 200 rows)
 The specific tasks:
 1) Review the existing spreadsheet, and their sample data and make any assumptions you need about the company;
 2) Design a data model(ERD, logical data model) using Erwin Modeler after reviewing the existing spreadsheet. Add any attributes(including data range) that you think could be useful. Identify primary keys, foreign keys, and relationships;
@@ -26,4 +26,19 @@ Trigger timing and event: After Updating rows in the product table
 Trigger action: If the quantity is below 5, then change the inventory status to “Need attention”
 7) Run two queries:
 a.	Find all the customers(ids) who purchased “CREAM CUPID HEARTS COAT HANGER” and “SAVE THE PLANET MUG”
-b.	Find out which customer spent most money.<br>*
+b.	Find out which customer spent most money.<br>
+
+*Briefly<br>*
+
+*1.	Use Excel explore data.<br>*
+
+*2.	Use Lucid and Erwin build ERD AND 3NF.<br>*
+
+*3.	Use Excel filter data, remove duplicate row, slice data.*
+
+*4.	Use SQL Server build database, use SQL create table, constraint, insert into data.<br>*
+
+*5.	Test dataset<br>*
+
+*6.	Check constraints.<br>*
+
