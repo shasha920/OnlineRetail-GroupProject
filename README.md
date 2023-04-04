@@ -1,9 +1,9 @@
 # OnlineRetail-GroupProject<br>
 
 
-*GBA 5140 Statistics Essentials for Business Analytics<br>*
+*Data Management in Business Analytics<br>*
 
-*Turo Project Description<br>*
+*Online Retail Description<br>*
 
 *team member: Ramon Gomez, Harry Ho, Noor Latif, Daniel Nguyen, Hua Yang<br>*
 
