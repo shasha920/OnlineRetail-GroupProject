@@ -1,8 +1,10 @@
 -- Create a database using SSMS. Use SQL statements to create tables, insert rows, and create
-CREATE TABLE CUSTOMER(
-CustomerID INT NOT NULL,
-Country varchar(100)
-PRIMARY KEY (CustomerID)
+--b.the customer id must be a five-digit number
+CREATE TABLE [CUSTOMER] (
+    [CustomerID] int NOT NULL,
+    [Country] varchar(100),
+    PRIMARY KEY ([CustomerID]),
+    CONSTRAINT "Customer ID has a length of 5" CHECK (LEN([CustomerID]) = 5) 
 );
 
 INSERT INTO CUSTOMER(CustomerID,Country)
@@ -26,12 +28,16 @@ VALUES
 SELECT *
 FROM CUSTOMER;
 
-CREATE TABLE PRODUCT(
-ProductCode varchar(100) NOT NULL,
-Description varchar(100),
-Status varchar(100),
-Inventory_Quantity int
-PRIMARY KEY (ProductCode)
+--d.quantity is between 0 and 1000, original request 200, 
+--but original dataset already have some data beyond 200, so change to 1000
+--like 22466 quantity already greater than 200
+CREATE TABLE [PRODUCT] (
+    [ProductCode] varchar(100) NOT NULL,
+    [Description] varchar(100),
+    [Status] varchar(100),
+    [Inventory_Quantity] int,
+    PRIMARY KEY ([ProductCode]),
+	CONSTRAINT CHK_Inventory_Quantity_Range CHECK ([Inventory_Quantity] >= 0 AND [Inventory_Quantity] <= 1000)
 );
 
 INSERT INTO PRODUCT(ProductCode,Description,Inventory_Quantity,Status)
@@ -203,13 +209,15 @@ VALUES
 SELECT *
 FROM PRODUCT;
 
-CREATE TABLE INVOICE(
-InvoiceNo INT NOT NULL,
-CustomerID INT,
-InvoiceDate DATE,
-PRIMARY KEY (InvoiceNo),
-FOREIGN KEY (CustomerID)
-REFERENCES CUSTOMER(CustomerID)
+--5. create constraints and check constraints
+--a.he date of Invoice must be after Â‘2010-Jan-01'
+CREATE TABLE [INVOICE] (
+    [InvoiceNo] int NOT NULL,
+    [CustomerID] int,
+    [InvoiceDate] date,
+    PRIMARY KEY ([InvoiceNo]),
+    FOREIGN KEY ([CustomerID]) REFERENCES [CUSTOMER]([CustomerID]),
+    CONSTRAINT [Constraint Date Greater than 1/1/2010] CHECK ([InvoiceDate] >= '2010-01-01')
 );
 
 INSERT INTO INVOICE(InvoiceNo,InvoiceDate,CustomerID)
@@ -241,15 +249,18 @@ VALUES
 SELECT *
 FROM INVOICE;
 
+--c.the default value of quantity is 0
+--e.use ON DELETE CASCADE and ON UPDATE CASCADE for the foreign key of the weak entity
+--In our case, On INVOICE_DETAIL is weak entity, FOREIGN KEY ProductCode need set up constraint
 CREATE TABLE INVOICE_DETAIL(
 InvoiceNo INT NOT NULL,
 ProductCode varchar(100),
-Purchase_Quantity INT,
+Purchase_Quantity INT DEFAULT 0,
 UnitPrice FLOAT,
 Total AS (Purchase_Quantity*UnitPrice) PERSISTED,
-PRIMARY KEY (InvoiceNo,ProductCode),
-FOREIGN KEY(InvoiceNo) REFERENCES INVOICE (InvoiceNo),
-FOREIGN KEY(ProductCode) REFERENCES PRODUCT (ProductCode)
+PRIMARY KEY (InvoiceNo,ProductCode,UnitPrice),
+FOREIGN KEY(InvoiceNo) REFERENCES INVOICE (InvoiceNo) ON DELETE CASCADE ON UPDATE CASCADE,
+FOREIGN KEY(ProductCode) REFERENCES PRODUCT (ProductCode) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 --InvoiceNo:536381 ProductCode 71270 duplicate
@@ -486,26 +497,13 @@ LEFT JOIN CUSTOMER C ON C.CustomerID=I.CustomerID
 LEFT JOIN PRODUCT P ON P.ProductCode=ID.ProductCode;
 --DELET DUPLICATE DATA, ORIGINAL DATA ROW 212,NOW 208
 
---5. create constraints and check constraints
---a.he date of Invoice must be after ‘2010-Jan-01'
-ALTER TABLE INVOICE
-ADD CONSTRAINT "Constraint Date Greater than 1/1/2010"
-CHECK(InvoiceDate>='2010-01-01');
+
 
 --TEST CASE
 --INSERT INTO INVOICE(InvoiceNo,InvoiceDate,CustomerID) Test
 --VALUES
 --(111111,'12-01-2009',22222);
 
---b.the customer id must be a five-digit number
-ALTER TABLE Customer
-ADD CONSTRAINT "Customer ID has a length of 5" 
-CHECK (len(CustomerID)=5);
-
---c.the default value of quantity is 0
-ALTER TABLE INVOICE_DETAIL
-ADD CONSTRAINT "Set zero as default for purchase quantity" 
-DEFAULT 0 FOR Purchase_Quantity;
 
 --TEST
 --INSERT INTO INVOICE_DETAIL(InvoiceNo,ProductCode,UnitPrice)
@@ -518,13 +516,6 @@ DEFAULT 0 FOR Purchase_Quantity;
 --WHERE InvoiceNo='536367';
 
 
---d.quantity is between 0 and 1000, original request 200, 
---but original dataset already have some data beyond 200, so change to 1000
---like 22466 quantity already greater than 200
-ALTER TABLE PRODUCT
-ADD CONSTRAINT "Setting Quantity Range"
-CHECK (Inventory_Quantity>=0 AND Inventory_Quantity<=1000);
-
 --TEST
 --INSERT INTO PRODUCT(ProductCode, Description, Inventory_Quantity, Status)
 --VALUES
@@ -535,19 +526,12 @@ CHECK (Inventory_Quantity>=0 AND Inventory_Quantity<=1000);
 --VALUES
 --('test2','test2',1001,'Need attention');
 
---e.use ON DELETE CASCADE and ON UPDATE CASCADE for the foreign key of the weak entity
---In our case, On INVOICE_DETAIL is weak entity, FOREIGN KEY ProductCode need set up constraint
-ALTER TABLE INVOICE_DETAIL
-ADD CONSTRAINT FK_ProductCode_Product
-FOREIGN KEY (ProductCode) REFERENCES PRODUCT(ProductCode)
-ON DELETE CASCADE
-ON UPDATE CASCADE;
 
 
 --6. Add a column into table Product to indicate the inventory status(If the column has not been created
 --in previous steps). Create a trigger named quantity_update that checks the quantity of each product
 --Trigger timing and event: After Updating rows in the product table
---Trigger action: If the quantity is below 5, then change the inventory status to “Need attention"
+--Trigger action: If the quantity is below 5, then change the inventory status to Â“Need attention"
 CREATE TRIGGER qty_trigger_1
 ON PRODUCT AFTER UPDATE
 AS
@@ -599,7 +583,7 @@ END;
 --WHERE ProductCode='71053';
 
 --7) Run two queries:
---a. Find all the customers(ids) who purchased “CREAM CUPID HEARTS COAT HANGER” and “SAVE THE PLANET MUG”
+--a. Find all the customers(ids) who purchased Â“CREAM CUPID HEARTS COAT HANGERÂ” and Â“SAVE THE PLANET MUGÂ”
 --TEST OUTPUT WITH THE EXCEL ROWS
 SELECT DISTINCT I.CustomerID
 from INVOICE I
